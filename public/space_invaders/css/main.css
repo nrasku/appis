@@ -1,0 +1,28 @@
+* { padding: 0; margin: 0; }
+
+canvas { 
+    background-color: rgb(17, 16, 16); 
+    display: none;
+    margin: 0 auto;
+}
+
+div#start-screen {
+    background-color: rgb(17, 16, 16);
+    display: block;
+    margin: auto;
+    height: 380px;
+    width: 600px;
+    text-align: center;
+}
+
+div#start-screen h1 {
+    color: rgb(255, 255, 255)
+}
+
+div#start-screen input {
+    color: rgb(255, 255, 255);
+    background-color: rgb(17, 16, 16);
+    margin: 150px;
+    padding: 20px 100px;
+    font-size: xx-large;
+}

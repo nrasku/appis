@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+	<title>WORKING TITLE</title>
+	<link rel="stylesheet" href="./css/main.css">
+	<script type="text/javascript" src="./underscore-min.js"></script>
+	<script type="text/javascript" src="./helpers.js"></script>
+	<script type="text/javascript" src="./shared/hitbox.js"></script>
+	<script type="text/javascript" src="./initializers/enemyInit.js"></script>
+    <script type="text/javascript" src="./explosionParticles.js"></script>
+    <script type="text/javascript" src="./ship.js"></script>
+	<script type="text/javascript" src="./ammo/missile.js"></script>
+	<script type="text/javascript" src="./ammo/basicMissile.js"></script>
+	<script type="text/javascript" src="./ammo/shooterMissile.js"></script>
+	<script type="text/javascript" src="./enemies/enemy.js"></script>
+	<script type="text/javascript" src="./enemies/standardEnemy.js"></script>
+	<script type="text/javascript" src="./enemies/zigzagEnemy.js"></script>
+	<script type="text/javascript" src="./enemies/shootingEnemy.js"></script>
+	<script type="text/javascript" src="./backdrop/background.js"></script>
+</head>
+<body>
+<div hidden>
+	<img src="./backdrop/level-1.jpg">
+	<img src="./assets/ship-1.png">
+	<img src="./assets/standard_enemy.png">
+	<img src="./assets/zigzag.png">
+	<img src="./assets/shooter_enemy.png">
+</div>
+<div id="start-screen">
+  <h1>WORKING TITLE</h1>
+  <input id="start-button" type="button" value="Start"/>
+</div>
+<canvas id="myCanvas" width="600" height="400"></canvas>
+
+<script>
+	var canvas = document.getElementById("myCanvas");
+	var ctx = canvas.getContext("2d");
+
+	var background;
+
+	var gameStarted = false;
+
+	var start = new Date();
+	var score = 0;
+	var gameOver = false;
+	var gameWon = false;
+
+	var ship = new Ship({x: 30, y: canvas.height/2 + 20, width: 40, height: 40, src: "./assets/ship-1.png", lowOpacitySrc: "./assets/ship-1-low-opacity.png"});
+
+	var particles = [];
+
+	var upPressed = false;
+	var downPressed = false;
+	var rightPressed = false;
+	var leftPressed = false;
+	var spacePressed = false;
+
+	var enemies = [];
+	var zigzagEnemies = [];
+	var shootingEnemies = [];
+
+	window.onload = function() { 
+		ship.initHitboxes();
+
+		enemies = initializeStandardEnemies(3, 45);
+		zigzagEnemies = initializeZigzagEnemies(15, 60);
+		shootingEnemies = initializeShootingEnemies(20, 60);
+
+		document.addEventListener("keydown", keyDownHandler, false);
+		document.addEventListener("keyup", keyUpHandler, false);
+		document.getElementById("start-button").addEventListener("click", startGame, false);
+
+		function startGame(e) {
+			document.getElementById("start-screen").style.display = "none";
+			document.getElementById("myCanvas").style.display = "block";
+
+			background = new Background({x: 0, y: 0, width: 1000, src: "./backdrop/level-1.jpg"})
+
+			gameStarted = true;
+			start = new Date();
+		}
+
+		function keyDownHandler(e) {
+			if(e.key == "Up" || e.key == "ArrowUp") {
+				upPressed = true;
+			} else if(e.key == "Down" || e.key == "ArrowDown") {
+				downPressed = true;
+			} else if(e.key == "Right" || e.key == "ArrowRight") {
+				rightPressed = true;
+			} else if(e.key == "Left" || e.key == "ArrowLeft") {
+				leftPressed = true;
+			} else if(e.keyCode == 32) {
+				spacePressed = true;
+			}
+		}
+
+		function keyUpHandler(e) {
+			if(e.key == "Up" || e.key == "ArrowUp") {
+				upPressed = false;
+			} else if(e.key == "Down" || e.key == "ArrowDown") {
+				downPressed = false;
+			} else if(e.key == "Right" || e.key == "ArrowRight") {
+				rightPressed = false;
+			} else if(e.key == "Left" || e.key == "ArrowLeft") {
+				leftPressed = false;
+			} else if(e.keyCode == 32) {
+				spacePressed = false;
+			}
+		}
+
+		function buttonActions() {
+			if(upPressed) {
+				ship.update(0, -ship.speed);
+			}
+
+			if(downPressed) {
+				ship.update(0, ship.speed);
+			} 
+
+			if(rightPressed) {
+				ship.update(ship.speed, 0);
+			} 
+
+			if(leftPressed) {
+				ship.update(-ship.speed, 0);
+			}
+
+			if(spacePressed) {
+				if(ship.canFire()) {
+					ship.fire();
+				}
+			}
+		}
+
+		function shipCollisionDetection() {
+			let onFieldEnemies = onFieldCollection(_.flatten([enemies, zigzagEnemies, shootingEnemies]));
+			for(var x = 0; x < onFieldEnemies.length; x++) {
+				let enemy = onFieldEnemies[x];
+				ship.hitByEnemy(enemy, onFieldEnemies);
+				if (!!enemy.missiles) {
+					let onFieldMissiles = onFieldCollection(enemy.missiles);
+					for(var m = 0; m < onFieldMissiles.length; m++) {
+						let missile = onFieldMissiles[m];
+						ship.hitByEnemy(missile, onFieldMissiles, m);
+					}
+				}
+			}
+		}
+
+		function missileCollisionDetection() {
+			let onFieldEnemies = onFieldCollection(_.flatten([enemies, zigzagEnemies, shootingEnemies]));
+			for(var x=0; x < onFieldEnemies.length; x++) {
+				let enemy = onFieldEnemies[x];
+				missileEnemyCollisionDetection(enemy);
+			}
+		}
+
+		function missileEnemyCollisionDetection(enemy) {
+			let onFieldMissiles = onFieldCollection(ship.missiles);
+			for(var m=0;m<onFieldMissiles.length;m++) {
+				var missile = onFieldMissiles[m];
+				if(!enemy.onField || !missile.onField) {
+					continue;
+				} else if(enemy.isHit(missile)) {
+					enemy.explode();
+					enemy.onField = false;
+					missile.onField = false;
+					score += 1;
+				}
+			}
+		}
+
+		function drawMissiles() {
+			let onFieldMissiles = onFieldCollection(ship.missiles);
+			if(onFieldMissiles.length > 0) {
+				for(var m=0;m<onFieldMissiles.length;m++) {
+					missile = onFieldMissiles[m];
+					if(missile.x < canvas.width + missile.width) {
+						missile.draw();
+					} else if(missile.x > canvas.width + missile.width) {
+						missile.onField = false;
+					}
+				}
+			}
+		}
+
+		function drawEnemies() {
+			var elapsed = elapsedSeconds(start);
+			let onFieldEnemies = onFieldCollection(enemies);
+			for(var e=0;e<onFieldEnemies.length;e++) {
+				enemy = onFieldEnemies[e];
+				if(enemy.shouldDraw(elapsed)) {
+					enemy.draw();
+					enemy.x -= enemy.xSpeed;
+				} else if(enemy.offGrid()) {
+					enemy.onField = false;
+				}
+			}
+		}
+
+		function drawZigzagEnemies() {
+			var elapsed = elapsedSeconds(start);
+			let onFieldEnemies = onFieldCollection(zigzagEnemies);
+			for(var z=0;z<onFieldEnemies.length;z++) {
+				var enemy = onFieldEnemies[z];
+				if(enemy.shouldDraw(elapsed)) {
+					if(enemy.y + enemy.image.height > canvas.height) {
+						enemy.ySpeed = -enemy.ySpeed;
+					} else if(enemy.y < 0) {
+						enemy.ySpeed = -enemy.ySpeed;
+					} else if(Math.abs(enemy.y - enemy.originalY) > enemy.verticalMovement) {
+						enemy.ySpeed = -enemy.ySpeed;
+					}
+					enemy.draw();
+					enemy.x -= enemy.xSpeed;
+					enemy.y += enemy.ySpeed;
+				} else if(enemy.offGrid()) {
+					enemy.onField = false;
+				}
+			}
+		}
+
+		function drawShootingEnemies() {
+			var elapsed = elapsedSeconds(start);
+			for(var s=0;s<shootingEnemies.length;s++) {
+				var enemy = shootingEnemies[s];
+				if(!enemy.onField) {
+					drawEnemyMissiles(enemy);
+					enemyMissileMovement(enemy);
+					continue;
+				} else if(enemy.shouldDraw(elapsed)) {
+					enemy.draw();
+					enemy.x -= enemy.xSpeed;
+					if(enemy.canFire()) {
+						enemy.fire();
+					}
+					drawEnemyMissiles(enemy);
+					enemyMissileMovement(enemy);
+				} else if(enemy.offGrid()) {
+					enemy.onField = false;
+				}
+			}
+		}
+
+		function drawEnemyMissiles(enemy) {
+			let m = onFieldCollection(enemy.missiles);
+			if(m.length > 0) {
+				for(var x=0;x<m.length;x++) {
+					missile = m[x];
+					if(missile.x > -missile.timing) {
+						missile.draw();
+					} else if(missile.x + missile.width < 0) {
+						missile.onField = false;
+					}
+				}
+			}
+		}
+
+		function drawScore() {
+			ctx.beginPath();
+			ctx.font = "16px Helvetica";
+			ctx.fillStyle = "#0095DD";
+			ctx.fillText("Score: "+score, 8, 20);
+		}
+
+		function drawLives() {
+			ctx.beginPath();
+			ctx.font = "16px Helvetica";
+			ctx.fillStyle = "#0095DD";
+			ctx.fillText("Lives: "+ship.lives, canvas.width-65, 20);
+		}
+
+		function drawGameState() {
+			if(gameWon && !gameOver) {
+				ctx.beginPath();
+				ctx.font = "48px Helvetica";
+				ctx.fillStyle = "#0095DD";
+				ctx.fillText("YOU WIN", 200, canvas.height/2);
+			}
+			if(gameOver) {
+				ctx.beginPath();
+				ctx.font = "48px Helvetica";
+				ctx.fillStyle = "#C2130A"
+				ctx.fillText("GAME OVER", 150, canvas.height/2);
+			}
+		}
+
+		function missileMovement() {
+			let shipM = onFieldCollection(ship.missiles);
+			for(var x=0;x<shipM.length;x++) {
+				missile = shipM[x];
+				missile.update();
+			}
+		}
+
+		function enemyMissileMovement(enemy) {
+			let enemyM = onFieldCollection(enemy.missiles)
+			for(var m=0;m<enemyM.length;m++) {
+				var missile = enemyM[m];
+				missile.update();
+			}
+		}
+
+		function isGameWon() {
+			let onFieldEnemies = onFieldCollection(_.flatten([enemies, zigzagEnemies, shootingEnemies]));
+			if (!(onFieldEnemies.length > 0)) {
+				gameWon = true;
+			}
+		}
+
+		function loop() {
+			if(gameStarted) {
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				background.update();
+				background.draw();
+				drawMissiles();
+				drawEnemies();
+				drawZigzagEnemies();
+				drawShootingEnemies();
+				drawLives();
+				drawScore();
+				drawGameState();
+				missileMovement();
+				buttonActions();
+				shipCollisionDetection();
+				missileCollisionDetection();
+				for(var i=0;i<particles.length;i++) {
+					particles[i].draw();
+					particles[i].update();
+				}
+				ship.draw();
+				isGameWon();
+			}
+			requestAnimationFrame(loop);
+		}
+		
+		loop();
+	}
+</script>
+
+</body>
+</html>
