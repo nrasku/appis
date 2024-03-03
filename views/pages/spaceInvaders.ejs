@@ -18,20 +18,20 @@
 	<script type="text/javascript" src="./enemies/zigzagEnemy.js"></script>
 	<script type="text/javascript" src="./enemies/shootingEnemy.js"></script>
 	<script type="text/javascript" src="./backdrop/background.js"></script>
+	<script type="text/javascript" src="./startScreen.js"></script>
 </head>
 <body>
 <div hidden>
 	<img src="./backdrop/level-1.jpg">
+	<img src="./backdrop/level-2.jpg">
 	<img src="./assets/ship-1.png">
 	<img src="./assets/ship-1-low-opacity.png">
 	<img src="./assets/standard_enemy.png">
 	<img src="./assets/zigzag.png">
 	<img src="./assets/shooter_enemy.png">
 </div>
-<div id="start-screen">
-  <h1>WORKING TITLE</h1>
-  <input id="start-button" type="button" value="Start"/>
-</div>
+<div></div>
+
 <canvas id="myCanvas" width="600" height="400"></canvas>
 
 <script>
@@ -61,6 +61,11 @@
 	var zigzagEnemies = [];
 	var shootingEnemies = [];
 
+	var mouseX;
+	var mouseY;
+
+	var level = 1;
+
 	window.onload = function() { 
 		ship.initHitboxes();
 
@@ -70,7 +75,20 @@
 
 		document.addEventListener("keydown", keyDownHandler, false);
 		document.addEventListener("keyup", keyUpHandler, false);
-		document.getElementById("start-button").addEventListener("click", startGame, false);
+		//document.getElementById("start-button").addEventListener("click", startGame, false);
+		canvas.addEventListener("mousemove", checkPos);
+
+		startScreen();
+
+		function checkPos(mouseEvent) {
+			if (mouseEvent.pageX || mouseEvent.pageY == 0) {
+				mouseX = mouseEvent.pageX - this.offsetLeft;
+				mouseY = mouseEvent.pageY - this.offsetTop;
+			} else if (mouseEvent.offsetX || mouseEvent.offsetY == 0) {
+				mouseX = mouseEvent.offsetX;
+				mmouseY = mouseEvent.offsetY
+			}
+		}
 
 		function startGame(e) {
 			document.getElementById("start-screen").style.display = "none";
@@ -93,6 +111,8 @@
 				leftPressed = true;
 			} else if(e.keyCode == 32) {
 				spacePressed = true;
+			} else if(e.keyCode == 78) {
+				changeLevel();
 			}
 		}
 
@@ -277,13 +297,13 @@
 				ctx.beginPath();
 				ctx.font = "48px Helvetica";
 				ctx.fillStyle = "#0095DD";
-				ctx.fillText("YOU WIN", 200, canvas.height/2);
+				ctx.fillText("LEVEL CLEARED!", 200, canvas.height/2);
 			}
 			if(gameOver) {
 				ctx.beginPath();
 				ctx.font = "48px Helvetica";
 				ctx.fillStyle = "#C2130A"
-				ctx.fillText("GAME OVER", 150, canvas.height/2);
+				ctx.fillText("GAME OVER!", 150, canvas.height/2);
 			}
 		}
 
@@ -308,6 +328,13 @@
 			if (!(onFieldEnemies.length > 0)) {
 				gameWon = true;
 			}
+		}
+
+		function changeLevel() {
+			level += 1;
+
+			let backgroundSrc = `./backdrop/level-${level}.jpg`
+			background = new Background({x: 0, y: 0, width: 1000, src: backgroundSrc})
 		}
 
 		function loop() {

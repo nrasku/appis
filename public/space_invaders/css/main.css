@@ -1,9 +1,38 @@
 * { padding: 0; margin: 0; }
 
+@font-face {
+    font-family: 'SpaceMono';
+    src: url("../assets/SpaceMono-Regular.ttf");
+    font-weight: normal;
+}
+
+@font-face {
+    font-family: 'SpaceMono';
+    src: url("../assets/SpaceMono-Italic.ttf");
+    font-style: italic;
+    font-weight: normal;
+}
+
+@font-face {
+    font-family: 'SpaceMono';
+    src: url("../assets/SpaceMono-BoldItalic.ttf");
+    font-weight: bold;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'SpaceMono';
+    src: url("../assets/SpaceMono-Bold.ttf");
+    font-weight: bold;
+    font-style: normal;
+}
+
 canvas { 
     background-color: rgb(17, 16, 16); 
-    display: none;
+    display: block;
     margin: 0 auto;
+    position: relative;
+    top: 20em;
 }
 
 div#start-screen {
@@ -13,10 +42,14 @@ div#start-screen {
     height: 380px;
     width: 600px;
     text-align: center;
+    position: relative;
+    top: 20em;
 }
 
 div#start-screen h1 {
-    color: rgb(255, 255, 255)
+    color: rgb(255, 255, 255);
+    position: relative;
+    top: 1em;
 }
 
 div#start-screen input {

@@ -19,7 +19,7 @@ Background.prototype.draw = function() {
         this.y, this.width, this.heigth);
     // Draw second looping background at the edge of visible background
     ctx.drawImage(this.image, 
-          this.x + this.width, 
+          this.x + this.width - 1, 
           this.y, this.width, this.heigth);
     
 }
