@@ -80,16 +80,6 @@
 
 		startScreen();
 
-		function checkPos(mouseEvent) {
-			if (mouseEvent.pageX || mouseEvent.pageY == 0) {
-				mouseX = mouseEvent.pageX - this.offsetLeft;
-				mouseY = mouseEvent.pageY - this.offsetTop;
-			} else if (mouseEvent.offsetX || mouseEvent.offsetY == 0) {
-				mouseX = mouseEvent.offsetX;
-				mmouseY = mouseEvent.offsetY
-			}
-		}
-
 		function startGame(e) {
 			document.getElementById("start-screen").style.display = "none";
 			document.getElementById("myCanvas").style.display = "block";
