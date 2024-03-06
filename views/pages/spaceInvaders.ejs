@@ -66,6 +66,13 @@
 
 	var level = 1;
 
+	function startGame(e) {
+		background = new Background({x: 0, y: 0, width: 1000, src: "./backdrop/level-1.jpg"})
+
+		gameStarted = true;
+		start = new Date();
+	}
+
 	window.onload = function() { 
 		ship.initHitboxes();
 
@@ -77,18 +84,9 @@
 		document.addEventListener("keyup", keyUpHandler, false);
 		//document.getElementById("start-button").addEventListener("click", startGame, false);
 		canvas.addEventListener("mousemove", checkPos);
+		canvas.addEventListener("mouseup", checkClick);
 
 		startScreen();
-
-		function startGame(e) {
-			document.getElementById("start-screen").style.display = "none";
-			document.getElementById("myCanvas").style.display = "block";
-
-			background = new Background({x: 0, y: 0, width: 1000, src: "./backdrop/level-1.jpg"})
-
-			gameStarted = true;
-			start = new Date();
-		}
 
 		function keyDownHandler(e) {
 			if(e.key == "Up" || e.key == "ArrowUp") {
@@ -270,28 +268,28 @@
 
 		function drawScore() {
 			ctx.beginPath();
-			ctx.font = "16px Helvetica";
+			ctx.font = "16px SpaceMono";
 			ctx.fillStyle = "#0095DD";
 			ctx.fillText("Score: "+score, 8, 20);
 		}
 
 		function drawLives() {
 			ctx.beginPath();
-			ctx.font = "16px Helvetica";
+			ctx.font = "16px SpaceMono";
 			ctx.fillStyle = "#0095DD";
-			ctx.fillText("Lives: "+ship.lives, canvas.width-65, 20);
+			ctx.fillText("Lives: "+ship.lives, canvas.width-90, 20);
 		}
 
 		function drawGameState() {
 			if(gameWon && !gameOver) {
 				ctx.beginPath();
-				ctx.font = "48px Helvetica";
+				ctx.font = "38px SpaceMono";
 				ctx.fillStyle = "#0095DD";
-				ctx.fillText("LEVEL CLEARED!", 200, canvas.height/2);
+				ctx.fillText("LEVEL CLEARED!", 150, canvas.height/2);
 			}
 			if(gameOver) {
 				ctx.beginPath();
-				ctx.font = "48px Helvetica";
+				ctx.font = "38px SpaceMono";
 				ctx.fillStyle = "#C2130A"
 				ctx.fillText("GAME OVER!", 150, canvas.height/2);
 			}

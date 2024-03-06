@@ -15,11 +15,13 @@ var iconRotate = 0;
 var iconImage = new Image();
 iconImage.src = "assets/star.png"
 
+var frames = 30;
+var timerId = 0;
+
+var fadeId = 0;
+
 function startScreen() {
     background = new Background({x: 0, y: 0, width: 1000, src: "./backdrop/start-screen.jpg"})
-
-    var frames = 30;
-    var timerId = 0;
 
     timerId = setInterval(updateStartScreen, 1000/frames);
 }
@@ -38,8 +40,8 @@ function updateStartScreen() {
     ctx.fillText("HOW-TO-PLAY", BUTTON_X_VALUES[1], BUTTON_Y_VALUES[1]);
 
     ctx.strokeStyle = "orange";
-    ctx.strokeRect(235, 130, BUTTON_WIDTHS[0], BUTTON_HEIGHTS[0]);
-    ctx.strokeRect(185, 175, BUTTON_WIDTHS[1], BUTTON_HEIGHTS[1]);
+    //ctx.strokeRect(235, 130, BUTTON_WIDTHS[0], BUTTON_HEIGHTS[0]);
+    //ctx.strokeRect(185, 175, BUTTON_WIDTHS[1], BUTTON_HEIGHTS[1]);
 
     if(iconSize == iconWidth){
         iconRotate = -1;
@@ -76,11 +78,43 @@ function checkPos(mouseEvent) {
                 iconVisible = true;
                 iconX[0] = BUTTON_X_VALUES[i] - (iconWidth/2) - 2;
                 iconY[0] = BUTTON_Y_VALUES[i] - 30;
-                iconX[1] = BUTTON_X_VALUES[i] + BUTTON_WIDTHS[i] + (iconWidth/2); 
+                iconX[1] = BUTTON_X_VALUES[i] + BUTTON_WIDTHS[i] + (iconWidth/2) - 4; 
                 iconY[1] = BUTTON_Y_VALUES[i] - 30;
             }
         } else {
             iconVisible = false;
         }
     }
+}
+
+function checkClick(mouseEvent){
+	for(i = 0; i < BUTTON_X_VALUES.length; i++){
+		if(mouseX > BUTTON_X_VALUES[i] && mouseX < BUTTON_X_VALUES[i] + BUTTON_WIDTHS[i]){
+			if(mouseY < BUTTON_Y_VALUES[i] && mouseY > BUTTON_Y_VALUES[i] - BUTTON_HEIGHTS[i]){
+                fadeId = setInterval(`fadeOut(${i})`, 1000/frames);
+                clearInterval(timerId);
+                canvas.removeEventListener("mousemove", checkPos);
+                canvas.removeEventListener("mouseup", checkClick);
+			}
+		}
+	}
+}
+
+var time = 0.0;
+
+function fadeOut(btn){
+	ctx.fillStyle = "rgba(0,0,0, 0.2)";
+	ctx.fillRect (0, 0, 600, 400);
+	time += 0.1;
+	if(time >= 2){
+		clearInterval(fadeId);
+        time = 0;
+        if (btn === 0) { // Start-button pressed
+            startGame();
+        } else { // Resetting start screen for now - before we implement other features
+            timerId = setInterval("updateStartScreen()", 1000/frames);
+            canvas.addEventListener("mousemove", checkPos);
+            canvas.addEventListener("mouseup", checkClick);
+        }
+	}
 }
