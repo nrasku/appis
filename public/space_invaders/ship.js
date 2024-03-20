@@ -7,7 +7,7 @@ function Ship(ship) {
 	this.originalX = this.x;
 	this.originalY = this.y;
 
-	this.speed = 2;
+	this.speed = 1.5;
 	this.height = 10;
 	this.width = 20;
 	this.lives = 3;
@@ -21,6 +21,12 @@ function Ship(ship) {
 	this.lowOpacitySrc = ship.lowOpacitySrc;
 	this.image = new Image();
 	this.image.src = this.src;
+
+	this.spriteSheetRows = 1;
+	this.spriteSheetColumns= 3;
+	this.currentFrame = 0;
+
+	console.log(this.image.width);
 }
 
 Ship.prototype.initHitboxes = function() {
@@ -29,16 +35,30 @@ Ship.prototype.initHitboxes = function() {
 }
 
 Ship.prototype.draw = function() {
+	this.currentFrame++;
+
+    let maxFrame = this.spriteSheetColumns * this.spriteSheetRows - 1;
+    if (this.currentFrame > 29){
+        this.currentFrame = 0;
+	}
+
 	let elapsed = (new Date() - this.blinkTimer)/1000;
 	let decimal = Math.round(elapsed * 10);
-	if(!this.blinkTimer || decimal % 2 == 1) {
+	if (!this.blinkTimer || decimal % 2 == 1) {
 		this.image.src = this.src;
-		ctx.drawImage(this.image, this.x, this.y);
+		// Slower frames achieved by using higher frame value
+		if (this.currentFrame < 10) {
+			ctx.drawImage(this.image, 0, 0, this.image.width * 0.33, 60, this.x, this.y, this.image.width * 0.33, 60);
+		} else if (this.currentFrame < 20) {
+			ctx.drawImage(this.image, this.image.width * 0.33, 0, this.image.width * 0.33, 60, this.x, this.y, this.image.width * 0.33, 60);
+		} else if (this.currentFrame < 30) {
+			ctx.drawImage(this.image, this.image.width * 0.66, 0, this.image.width * 0.33, 60, this.x, this.y, this.image.width * 0.33, 60);
+		}
 	} else {
 		this.image.src = this.lowOpacitySrc;
 		ctx.drawImage(this.image, this.x, this.y);
 	}
-	if(elapsed >= this.blinkTime) {
+	if (elapsed >= this.blinkTime) {
 		this.touchable = true;
 		this.blinkTimer = null;
 	}
@@ -102,7 +122,7 @@ Ship.prototype.canFire = function() {
 }
 
 Ship.prototype.fire = function() {
-	let bow = this.x + this.image.width;
+	let bow = this.x + this.image.width * 0.33;
 	let missile = {
 		x: bow,
 		y: this.y + this.image.height/2

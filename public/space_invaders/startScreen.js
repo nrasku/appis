@@ -38,7 +38,7 @@ function updateStartScreen() {
     ctx.fillText("START", BUTTON_X_VALUES[0], BUTTON_Y_VALUES[0]);
     ctx.font = "30px Spacemono";
     ctx.fillText("HOW-TO-PLAY", BUTTON_X_VALUES[1], BUTTON_Y_VALUES[1]);
-
+  
     ctx.strokeStyle = "orange";
     //ctx.strokeRect(235, 130, BUTTON_WIDTHS[0], BUTTON_HEIGHTS[0]);
     //ctx.strokeRect(185, 175, BUTTON_WIDTHS[1], BUTTON_HEIGHTS[1]);
